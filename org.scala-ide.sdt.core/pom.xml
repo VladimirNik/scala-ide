@@ -64,6 +64,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>sprinter_2.10</artifactId>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <!-- log4j without its dependencies -->
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
@@ -123,6 +129,10 @@
                   <artifactId>miglayout</artifactId>
                 </artifactItem>
                 <artifactItem>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>sprinter_2.10</artifactId>
+                </artifactItem>
+                <artifactItem>
                   <groupId>org.scala-lang.plugins</groupId>
                   <artifactId>continuations</artifactId>
                   <type>jar</type>
@@ -166,6 +176,14 @@
                   <classifier>sources</classifier>
                   <type>jar</type>
                   <destFileName>scala-compiler-src.jar</destFileName>
+                  <outputDirectory>${project.build.directory}/src</outputDirectory>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.scala-lang</groupId>
+                  <artifactId>sprinter_2.10</artifactId>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <destFileName>sprinter-src.jar</destFileName>
                   <outputDirectory>${project.build.directory}/src</outputDirectory>
                 </artifactItem>
               </artifactItems>

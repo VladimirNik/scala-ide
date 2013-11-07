@@ -54,7 +54,7 @@ class ExplicitTypeAssistTest {
       val Seq(pos) = SDTTestUtils.positionsOf(contents.toCharArray(), "^")
       val proposals = new ArrayList[IJavaCompletionProposal]
       // get all corrections for the problem
-
+      println("===== ExplicitReturnType test ===== ")
       f(ExplicitReturnType.suggestsFor(unit, pos).headOption)
     } finally
       unit.delete(true, null)
@@ -73,18 +73,24 @@ class ExplicitTypeAssistTest {
   @Test
   def assistVal() {
     assistsFor("""
+        import scala.collection.mutable
+        import scala.Predef._
         class Test {
-          val foo = ^42
+          val list = ^scala.collection.mutable.Buffer(3)
         }
         """.stripMargin, """
+        import scala.collection.mutable
+        import scala.Predef._
         class Test {
-          val foo: Int = 42
+          val list: scala.collection.mutable.Buffer[Int] = scala.collection.mutable.Buffer(3)
         }
         """.stripMargin)
   }
 
   @Test
   def assistDef() {
+    System.out.println("===== !!! This is testing !!! =====")
+    println("=== just testing ===")
     assistsFor("""
         class Test {
           def foo(x: Int) = ^x + 1

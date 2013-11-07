@@ -1,12 +1,12 @@
 package scala.tools.eclipse.quickfix.explicit
 
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
-
 import scala.collection.immutable
 import scala.reflect.internal.Chars
 import scala.tools.eclipse.compiler.Token
 import scala.tools.eclipse.javaelements.ScalaSourceFile
 import scala.tools.nsc.ast.parser.Tokens
+import scala.sprinter.printers.PrettyPrinters
 
 /** A quick fix that adds an explicit return type to a given val or def
  */
@@ -18,14 +18,12 @@ object ExplicitReturnType {
   private def addReturnType(ssf: ScalaSourceFile, offset: Int): Option[IJavaCompletionProposal] = {
     ssf.withSourceFile { (sourceFile, compiler) =>
       import compiler.{ Tree, ValDef, EmptyTree, TypeTree, DefDef, ValOrDefDef }
-
       /** Find the tokens leading to tree `rhs` and return the position before `=`,
        *  or -1 if not found.
        */
       def findInsertionPoint(vdef: ValOrDefDef): Int = {
         val lexical = new compiler.LexicalStructure(sourceFile)
         val tokens = lexical.tokensBetween(vdef.pos.startOrPoint, vdef.rhs.pos.startOrPoint)
-
         tokens.reverse.find(_.tokenId == Tokens.EQUALS) match {
           case Some(Token(_, start, _)) =>
             var pos = start
@@ -53,6 +51,22 @@ object ExplicitReturnType {
         }
 
       def expandableType(tpt: TypeTree) = compiler.askOption { () =>
+         println("======= This is near pretty printer invocation!!! =======")
+         val treeType = tpt.tpe
+         val symTree = tpt.symbol
+         val isType = tpt.symbol.isType
+         val printers: PrettyPrinters = PrettyPrinters(compiler)
+         val context = compiler.locateContext(tpt.pos).getOrElse(null)
+         val importInfoList = context.imports
+         val size = importInfoList.size
+         val importList = importInfoList map {x => x.tree}
+         val ls: List[String] = importList map {tr => tr.expr.toString()}
+         if (!importList.isEmpty) {
+           val imp = compiler.showRaw(importList(0))
+           val expr = importList(0).expr.toString()
+         }
+         val stringType = printers.showType(tpt, importList)
+         println("======= This is after type printing!!! =======")
         (tpt.original eq null) && !tpt.tpe.isErroneous
       }.getOrElse(false)
 
