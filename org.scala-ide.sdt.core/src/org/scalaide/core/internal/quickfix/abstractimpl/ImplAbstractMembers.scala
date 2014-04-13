@@ -11,9 +11,8 @@ import scala.reflect.internal.util.SourceFile
 import org.scalaide.core.internal.quickfix.AddMethodProposal
 
 object ImplAbstractMembers {
-  def suggestsFor(ssf: ScalaSourceFile, offset: Int): Array[IJavaCompletionProposal] = {
+  def suggestsFor(ssf: ScalaSourceFile, offset: Int): Array[IJavaCompletionProposal] =
     implAbstractMember(ssf, offset).toArray
-  }
 
   def implAbstractMember(ssf: ScalaSourceFile, offset: Int): List[IJavaCompletionProposal] = {
     ssf.withSourceFile { (srcFile, compiler) =>
@@ -30,9 +29,9 @@ object ImplAbstractMembers {
             // TODO: add sprinter to remove redundant type prefix
             else Option(tp.toString())) getOrElse ("Any")
           
-          // TODO: remove implicit
           val paramss: ParameterList = abstractMethod.paramss map {
             _.zipWithIndex.map { param =>
+              // add implicit to first param if required
               ((if (param._1.isImplicit && (param._2 == 0)) s"${compiler.nme.IMPLICITkw} " else "") + 
                   param._1.name.decode, processType(param._1.tpe.asSeenFrom(implDef.symbol.tpe, abstractMethod.owner)))
             }
@@ -59,8 +58,7 @@ object ImplAbstractMembers {
         compiler.askOption { () =>
           val tp = tree.symbol.tpe
           (tp.members filter { m =>
-            // TODO: find way to get abstract methods
-            //(m.isMethod || m.isValue) && m.isIncompleteIn(tree.symbol) && m.isDeferred && !m.isSetter && (m.owner != tree.symbol)
+            // TODO: find the way to get abstract methods simplier
             m.isMethod && m.isIncompleteIn(tree.symbol) && m.isDeferred && !m.isSetter && (m.owner != tree.symbol)
           } map { 
             sym =>
@@ -80,11 +78,8 @@ object ImplAbstractMembers {
         compiler.withResponse[Tree] { response =>
           compiler.askTypeAt(enclosingTree.pos, response)
         }.get.left.toOption flatMap {
-          // TODO: clean code
-          case cd : ClassDef =>
-            Option(implAbstractProposals(cd))
-          case md : ModuleDef =>
-            Option(implAbstractProposals(md))
+          case implDef : ImplDef =>
+            Option(implAbstractProposals(implDef))
           case _ => None
         } getOrElse (Nil)
       } else Nil
