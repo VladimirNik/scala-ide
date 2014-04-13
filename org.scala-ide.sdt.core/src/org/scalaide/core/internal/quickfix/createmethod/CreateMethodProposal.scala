@@ -3,7 +3,6 @@ package org.scalaide.core.internal.quickfix.createmethod
 import scala.reflect.internal.util.RangePosition
 import scala.tools.refactoring.implementations.AddMethod
 import scala.tools.refactoring.implementations.AddMethodTarget
-
 import org.eclipse.jdt.core.ICompilationUnit
 import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
@@ -18,6 +17,7 @@ import org.scalaide.core.internal.jdt.model.ScalaSourceFile
 import org.scalaide.util.internal.eclipse.EditorUtils
 import org.scalaide.util.internal.scalariform.ScalariformParser
 import org.scalaide.util.internal.scalariform.ScalariformUtils
+import org.scalaide.core.internal.quickfix.AddMethodProposal
 
 case class CreateMethodProposal(fullyQualifiedEnclosingType: Option[String], method: String, target: AddMethodTarget, compilationUnit: ICompilationUnit, pos: Position) extends IJavaCompletionProposal {
   private val UnaryMethodNames = "+-!~".map("unary_" + _)
@@ -42,7 +42,7 @@ case class CreateMethodProposal(fullyQualifiedEnclosingType: Option[String], met
     }) getOrElse ("Any")
   }
 
-  private val (targetSourceFile, className, targetIsOtherClass) = fullyQualifiedEnclosingType match {
+  /*protected*/ val (targetSourceFile, className, targetIsOtherClass) = fullyQualifiedEnclosingType match {
     case Some(otherClass) =>
       val info = new MissingMemberInfo(compilationUnit, otherClass, method, pos, sourceAst.get)
       val targetSourceFile = info.targetElement.collect { case scalaSource: ScalaSourceFile => scalaSource }
@@ -67,8 +67,8 @@ case class CreateMethodProposal(fullyQualifiedEnclosingType: Option[String], met
   private val parametersWithSimpleName = for (parameterList <- rawParameters)
     yield for ((name, tpe) <- parameterList) yield
       (name, tpe.substring(tpe.lastIndexOf('.') + 1))
-  private val parameters = ParameterListUniquifier.uniquifyParameterNames(parametersWithSimpleName)
-  private val returnType: ReturnType = if (UnaryMethodNames.contains(method)) className else rawReturnType
+  /*protected*/ val parameters = ParameterListUniquifier.uniquifyParameterNames(parametersWithSimpleName)
+  /*protected*/ val returnType: ReturnType = if (UnaryMethodNames.contains(method)) className else rawReturnType
 
   /*
    * if they write "unknown = 3" or "other.unknown = 3", we will be in here since
@@ -110,6 +110,7 @@ case class CreateMethodProposal(fullyQualifiedEnclosingType: Option[String], met
     }).mkString("(", ")(", ")")
 
     val returnTypeStr = returnType.map(": " + _).getOrElse("")
+//    val (prettyParameterList, returnTypeStr) = getMethodInfo(parameters, returnType)
 
     val base = s"Create method '$method$prettyParameterList$returnTypeStr'"
     val inType = if (targetIsOtherClass) s" in type '${className.get}'" else ""
