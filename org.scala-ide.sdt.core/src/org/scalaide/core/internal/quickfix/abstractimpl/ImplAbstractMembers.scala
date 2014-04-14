@@ -28,11 +28,11 @@ object ImplAbstractMembers {
             else if (tp.toString == "Null") Some("AnyRef")
             // TODO: add sprinter to remove redundant type prefix
             else Option(tp.toString())) getOrElse ("Any")
-          
+
           val paramss: ParameterList = abstractMethod.paramss map {
             _.zipWithIndex.map { param =>
               // add implicit to first param if required
-              ((if (param._1.isImplicit && (param._2 == 0)) s"${compiler.nme.IMPLICITkw} " else "") + 
+              ((if (param._1.isImplicit && (param._2 == 0)) s"${compiler.nme.IMPLICITkw} " else "") +
                   param._1.name.decode, processType(param._1.tpe.asSeenFrom(implDef.symbol.tpe, abstractMethod.owner)))
             }
           }
@@ -60,7 +60,7 @@ object ImplAbstractMembers {
           (tp.members filter { m =>
             // TODO: find the way to get abstract methods simplier
             m.isMethod && m.isIncompleteIn(tree.symbol) && m.isDeferred && !m.isSetter && (m.owner != tree.symbol)
-          } map { 
+          } map {
             sym =>
               new AbstractMemberProposal(sym.asMethod, tree, AddToClosest(offset))
           }).toList
