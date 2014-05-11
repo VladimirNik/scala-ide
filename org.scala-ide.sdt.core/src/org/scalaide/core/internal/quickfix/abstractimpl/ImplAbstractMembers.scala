@@ -17,9 +17,8 @@ object ImplAbstractMembers {
       def implAbstractProposals(tree: ImplDef): List[IJavaCompletionProposal] =
         compiler.askOption { () =>
           val tp = tree.symbol.tpe
-          (tp.members filter { m =>
-            // TODO: find the way to get abstract methods simplier
-            m.isMethod && m.isIncompleteIn(tree.symbol) && m.isDeferred && !m.isSetter && (m.owner != tree.symbol)
+          (tp.deferredMembers filter { m =>
+            m.isMethod && !m.isSetter && (m.owner != tree.symbol)
           } map {
             sym =>
               AbstractMemberProposal(compiler)(sym.asMethod, tree)(Option(ssf), AddToClosest(offset))
